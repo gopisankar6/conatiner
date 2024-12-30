@@ -1,17 +1,26 @@
-# FROM openjdk:8-jre-slim
-# WORKDIR /app
-# COPY target/*.jar internship-0.0.1-SNAPSHOT.jar
-# EXPOSE 8080
-# CMD ["java", "-jar", "internship-0.0.1-SNAPSHOT.jar"]
+# Frontend Dockerfile for React
+FROM node:14-alpine
 
-# Use the official Maven image to build the application
-FROM maven:3.8.5-openjdk-17 AS build
+# Set the working directory inside the container
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
 
-# Use the official OpenJDK image to run the application
-FROM openjdk:17-jdk-slim
-COPY --from=build /app/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Copy package.json and install dependencies
+COPY package.json ./ 
+# Include package-lock if available
+COPY package-lock.json ./  
+RUN npm install
+
+# Copy the rest of the application code
+COPY . .
+
+# Build the React app for production
+RUN npm run build
+
+# Serve the frontend using a simple HTTP server
+RUN npm install -g serve
+
+# Expose the port
+EXPOSE 3000
+
+# Start the app
+CMD ["serve", "-s", "build", "-l", "3000"]
