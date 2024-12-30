@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    ports:
+      - "3306:3306"
+
+  springboot:
+    build: 
+      context: D:\Internship\Backend\container-cost-management  # Path to your backend Dockerfile
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/mydatabase
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+    ports:
+      - "8082:8080"
+    depends_on:
+      - mysql
+
+  frontend:
+    build:
+      context: D:\Internship\Frontend\container-cost-management  # Path to your frontend Dockerfile
+    ports:
+      - "3000:3000"  # Map container port 3000 to host port 3000
+    environment:
+      REACT_APP_BACKEND_URL: http://springboot:8080  # Use service name for backend
+    depends_on:
+      - springboot
